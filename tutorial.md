@@ -1,77 +1,50 @@
-In this tutorial, I am learning by using an end-to-end workflow for LC-MS-based untargeted metabolomics experiments, conducted entirely within R using packages from the Bioconductor project or base R functionality.
- It should be noted that the samples were analyzed using ultra-high-performance liquid chromatography (UHPLC) coupled to a Q-TOF mass spectrometer (TripleTOF 5600+), and chromatographic separation was achieved using hydrophilic interaction liquid chromatography (HILIC).
+End-to-End Untargeted Metabolomics Workflow
+This tutorial covers an end-to-end workflow for LC-MS-based untargeted metabolomics experiments, conducted entirely within R using the Bioconductor ecosystem and base R functionality.
 
-In this workflow, two datasets are used:
+Project Overview
+The samples were analyzed using ultra-high-performance liquid chromatography (UHPLC) coupled to a Q-TOF mass spectrometer (TripleTOF 5600+), utilizing hydrophilic interaction liquid chromatography (HILIC) for separation.
 
-An LC-MS-based (MS1 level only) untargeted metabolomics dataset to quantify small polar metabolites in human plasma samples.
-An additional LC-MS/MS dataset of selected samples from the former study for the identification and annotation of significant features.
+Datasets used:
 
-individuals suffering from cardiovascular disease (CVD) 
-and healthy controls (CTR). 
-three CVD patients, three CTR individuals, and four quality control (QC) samples. 
-MetaboLights database under the ID: MTBLS8735.
+LC-MS (MS1): Quantification of small polar metabolites in human plasma.
 
+LC-MS/MS: Selected samples for feature identification and annotation.
 
-step 1 Data import
+Experimental Design:
 
-We extract our dataset from the MetaboLigths database and load it as an `MsExperiment` object. 
+Study Groups: Cardiovascular disease (CVD) patients vs. healthy controls (CTR).
 
-[img1]
+Samples: 3 CVD, 3 CTR, and 4 Quality Control (QC) samples.
 
-step 2 Data organization We next configure the parallel processing setup. Raw `.mzML` files contain millions of individual data points (mass-to-charge ratios, intensities, and retention times). processing them one by one on a single CPU core, can take hours. This code splits the workload so that **2 files are processed at the exact same time** using 2 separate cores of the processor.
-img2
+Database Reference: MetaboLights MTBLS8735.
 
-We are going to extract the metadata, rename the columns to something clean (like Sample, Type, Phenotype, Age), and save it back into our lcms1 object.
+Step 1: Data Import
+We extract the dataset from MetaboLights and load it as an MsExperiment object. This object acts as a container for both metadata and spectral data.
+![Data Import](images/img1.png)
+Step 2: Data Organization & Preprocessing
+Raw .mzML files contain millions of data points. To improve efficiency, we configure parallel processing to split the workload across CPU cores.
+![Parallel Processing](images/img2.png)
+Metadata Sanitization
+We extract the raw metadata, rename columns to human-readable formats (Sample, Type, Phenotype, Age), and integrate these into the lcms1 object.
+![Metadata Table](images/img4.png)
+Visual Encoding
+To ensure consistency across all downstream plots, we apply a global color mapping using the RColorBrewer package, assigning specific colors to QC, CVD, and CTR groups.
+![Color Palette](images/img5.png)
+Spectral Inspection
+The MS data is stored as a Spectra object. We inspect the metadata variables, including msLevel, rtime (retention time), precursorMz, and intensity.
+![Spectra Object](images/img6.png)
 
-we can also rename the columns, add "Qc" for the qc samples , and injection indeces and print the updated table
+![BPC Plot](images/img7.png)
+refining the chromatogram 
+![Refined BPC](images/img8.png)
+Step 3: Visualization of data (QA)
+Effective visualization is paramount for assessing data quality. We use two primary chromatogram types:
+![Importing IS](images/img9.png)
 
-img4
+BPC (Base Peak Chromatogram): Evaluates LC consistency.
 
-also by pre-defining a color mapping, we ensure that every single plot you make from this point forward (PCA plots, boxplots, chromatograms) 
-will have the same consistent color key using the RColorBrewer package:
+TIC (Total Ion Chromatogram): Evaluates overall instrument sensitivity.
 
-img 5
+![EIC Comparison](images/img10.png)
 
-The MS data of this experiment is stored as a Spectra object (from the Spectra Bioconductor package) within 
-the MsExperiment object and can be accessed using spectra() function
-
-img6
-
-spectraVariables: msLevel, rtime (retention time), precursorMz, and intensity. These are thmass spec data.
-
-Total spectra:  the total count. This number represents every individual "scan" the mass spectrometer took during the entire run.
-
-step3 Data visualization and general quality assessment. Effective visualization is paramount for inspecting and assessing the quality of MS data
-
-BPC (Base Peak Chromatogram): We need the consistency of liquid chromatography. If the peaks in BPC shift wildly between samples, the retention times aren't repeatable 
-and the alignment will fail.
-
-TIC (Total Ion Chromatogram): Total sensitivity?. If one sample's TIC is significantly lower than the others, mass spectrometer might have been "dirty" or
- lost sensitivity during that specific run.
-
-chromatogram function = The BPC can be extracted 
-
-aggregationFun = "max", maximum signal per spectrum. 
-aggregationFun = "sum",  all intensities of a spectrum, thereby creating a TIC.
-
-img7 BPC of all samples colored by phenotype.
- 
-we will filter the data removing that part after 200 s as well as the first 10 seconds measured in the LC run.
-and plot the BPC for each sample colored by phenotype, providing insights on the signal measured along the retention times of each sample
-
-img8
-  a BPC condenses the three-dimensional LC-MS data (m/z by retention time by intensity) into two dimensions (retention time by intensity).
-
-Internal standards EIC
-
-Reference points for all of our samples. By restricting the MS data to intensities within a restricted, m/z range and a selected retention time window, EICs are expected to contain only signal from a single type of ion
-
-Here only two isotopically labelled IS are used, methionine and cysteine
-
-img9 importing them  If wetell the software to look for mz = 249.0453, it looks for that exact number. Because of electronic noise and instrument calibration, the machine might record it as 249.0454 or 249.0452. If wedon't provide a window (mzmin to mzmax), the result returns "empty." This is why real-world metabolomics code always includes these small +/- tolerances.
-
-then we plot the EIC for both
-
-img10
-
-we immediately notice retention time shift as well as differences in intensities between samples and QC
+immediately noticing retention time shift as well differences in the intensity of IS in QC vs sample injections
