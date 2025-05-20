@@ -1,5 +1,5 @@
 End-to-End Untargeted Metabolomics Workflow
-This tutorial covers an end-to-end workflow for LC-MS-based untargeted metabolomics experiments, conducted entirely within R using the Bioconductor ecosystem and base R functionality.
+I am learning by using this end-to-end workflow for LC-MS-based untargeted metabolomics experiments, conducted entirely within R using the Bioconductor ecosystem and base R functionality.
 
 Project Overview
 The samples were analyzed using ultra-high-performance liquid chromatography (UHPLC) coupled to a Q-TOF mass spectrometer (TripleTOF 5600+), utilizing hydrophilic interaction liquid chromatography (HILIC) for separation.
@@ -33,18 +33,18 @@ To ensure consistency across all downstream plots, we apply a global color mappi
 Spectral Inspection
 The MS data is stored as a Spectra object. We inspect the metadata variables, including msLevel, rtime (retention time), precursorMz, and intensity.
 ![Spectra Object](images/img6.png)
-
 ![BPC Plot](images/img7.png)
-refining the chromatogram 
+Refining the chromatogram 
 ![Refined BPC](images/img8.png)
 Step 3: Visualization of data (QA)
-Effective visualization is paramount for assessing data quality. We use two primary chromatogram types:
-![Importing IS](images/img9.png)
 
 BPC (Base Peak Chromatogram): Evaluates LC consistency.
-
 TIC (Total Ion Chromatogram): Evaluates overall instrument sensitivity.
 
-![EIC Comparison](images/img10.png)
+Effective visualization is paramount for assessing data quality. We used two internal standards:
+First importing them both
+![Importing IS](images/img9.png)
 
+Then plotting
+![EIC Comparison](images/img10.png)
 immediately noticing retention time shift as well differences in the intensity of IS in QC vs sample injections
