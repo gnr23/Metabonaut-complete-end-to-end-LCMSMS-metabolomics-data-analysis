@@ -31,14 +31,23 @@ We extract the dataset from MetaboLights and load it as an MsExperiment object. 
 ## **Step 2: Data Organization & Preprocessing**
 
 Raw .mzML files contain millions of data points. To improve efficiency, we configure parallel processing to split the workload across CPU cores.
+
 ![Parallel Processing](images/img2.png)
+
 Metadata Sanitization
+
 We extract the raw metadata, rename columns to human-readable formats (Sample, Type, Phenotype, Age), and integrate these into the lcms1 object.
+
 ![Metadata Table](images/img4.png)
+
 Visual Encoding
+
 To ensure consistency across all downstream plots, we apply a global color mapping using the RColorBrewer package, assigning specific colors to QC, CVD, and CTR groups.
+
 ![Color Palette](images/img5.png)
+
 Spectral Inspection
+
 The MS data is stored as a Spectra object. We inspect the metadata variables, including msLevel, rtime (retention time), precursorMz, and intensity.
 
 ![Spectra Object](images/img6.png)
