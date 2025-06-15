@@ -26,6 +26,7 @@ The samples were analyzed using ultra-high-performance liquid chromatography (UH
 ## **Step 1: Data Import**
 
 We extract the dataset from MetaboLights and load it as an MsExperiment object. This object acts as a container for both metadata and spectral data.
+
 ![Data Import](images/img1.png)
 
 ## **Step 2: Data Organization & Preprocessing**
