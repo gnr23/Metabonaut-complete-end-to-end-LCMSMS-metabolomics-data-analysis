@@ -23,32 +23,27 @@ The samples were analyzed using ultra-high-performance liquid chromatography (UH
 
  - Database Reference: MetaboLights MTBLS8735.
 
-## **Step 1: Data Import**
+## **Step 1: Data Import**, organization and visualization
 
 We extract the dataset from MetaboLights and load it as an MsExperiment object. This object acts as a container for both metadata and spectral data.
 
 ![Data Import](images/img1.png)
 
-## **Step 2: Data Organization & Preprocessing**
-
 Raw .mzML files contain millions of data points. To improve efficiency, we configure parallel processing to split the workload across CPU cores.
 
 ![Parallel Processing](images/img2.png)
 
-Metadata cleanup
-
+Metadata Sanitization
 We extract the raw metadata, rename columns to human-readable formats (Sample, Type, Phenotype, Age), and integrate these into the lcms1 object.
 
 ![Metadata Table](images/img4.png)
 
 Visual Encoding
-
 To ensure consistency across all downstream plots, we apply a global color mapping using the RColorBrewer package, assigning specific colors to QC, CVD, and CTR groups.
 
 ![Color Palette](images/img5.png)
 
 Spectral Inspection
-
 The MS data is stored as a Spectra object. We inspect the metadata variables, including msLevel, rtime (retention time), precursorMz, and intensity.
 
 ![Spectra Object](images/img6.png)
@@ -59,7 +54,6 @@ Refining the chromatogram
 
 ![Refined BPC](images/img8.png)
 
-## **Step 3: Visualization of data (QA)**
 
 BPC (Base Peak Chromatogram): Evaluates LC consistency.
 TIC (Total Ion Chromatogram): Evaluates overall instrument sensitivity.
@@ -76,11 +70,11 @@ Then plotting
 we immediately notice clear concentration difference between QCs and study samples for the isotope labeled cystine ion. 
 Also, the labeled methionine internal standard exhibits a signal amidst some noise and a noticeable retention time shift between samples.
 
-## **Step 4 Data preprocessing**
+## **Step 2 Data preprocessing**
 
 3 major stages:
 
-*1- Chromatographic Peak Detection*
+## *1- Chromatographic Peak Detection*
 
 To achieve this, we employ the findChromPeaks() function within xcms.
 The preferred algorithm in this case, CentWave, utilizes continuous wavelet transformation (CWT)-based peak detection .
@@ -130,7 +124,6 @@ When processing a whole LC-MS dataset, the algorithm has thousands of data point
 
 If peak appears "jagged" or consists of too few MS1 data points, the algorithm may struggle to model the peak shape. In such cases, setting `extendLengthMSW = TRUE` in the `CentWaveParam` object can help the algorithm extend the search area for wavelet scales, improving detection for sparser signals.
 
-1.**Chromatographic peak detection on EICs**
 
 ![eval](images/img13.png)
 
@@ -203,7 +196,17 @@ Below we can see presentation of samples and number of identified chromatographi
 Summary of chromatographic peak detection results per sample.
 
 ***
-**2- Retention Time (RT) Alignment*****
 
 
-3- Correspondence (Grouping=Match features across different samples)
+
+## *2- Peak Retention Time (RT) Alignment*
+
+gdf
+
+
+
+
+
+
+## *3- Correspondence (Grouping=Match features across different samples)*
+
