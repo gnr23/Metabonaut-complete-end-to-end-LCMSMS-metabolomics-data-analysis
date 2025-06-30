@@ -201,12 +201,46 @@ Summary of chromatographic peak detection results per sample.
 
 ## *2- Peak Retention Time (RT) Alignment*
 
-gdf
+Even with ideal instrument conditions, experimental random variations will cause the peaks RT to shift across the chromatogram.
 
+![plotallign](images/img24.png)
 
+![plotallign2](images/img25.png)
 
+BPC of QC samples.
 
+Theoretically, we proceed in two steps: first we select only the QC samples of our dataset and do a first alignment on these, using the so-called _anchor peaks_. In this way we can assume a linear shift in time, 
 
+Despite having external QCs in our data set, we still use the subset-based alignment assuming retention time shifts to be independent of the different sample matrix (human serum or plasma) and instead are mostly instrument-dependent. _[xcms](https://bioconductor.org/packages/3.22/xcms)_ package.
+
+For the initial correspondence, we use the _PeakDensity_ approach ([Louail et al. 2025](https://rformassspectrometry.github.io/Metabonaut/articles/a-end-to-end-untargeted-metabolomics.html#ref-louail_xcms_2025)) that groups chromatographic peaks with similar _m/z_ and retention time into LC-MS features. The parameters for this algorithm, that can be configured using the `PeakDensityParam` object, are `sampleGroups`, `minFraction`, `binSize`, `ppm` and `bw`.
+
+-   `binSize`  and  `ppm`  define the required similarity of  _m/z_  values. 
+    
+-   High density areas are identified using the base R  `[density()](https://rdrr.io/r/stats/density.html)`  function, for which  `bw`  is a parameter: higher values define wider retention time areas, lower values require chromatographic peaks to have more similar retention times. 
+
+This code effectively visualizes the **High Density Areas** (the black line) vs. the actual **Chromatographic Peaks** detected in the samples.
+
+![plotallign3](images/img26.png)
+
+To optimize the `PeakDensityParam`, we performed a targeted visual inspection of _Cystine_. By setting `bw = 2` and `minFraction = 0.9`, we ensured that the peak grouping algorithm correctly identified the high-density retention time regions across all QC samples, creating a robust set of anchor peaks for subsequent alignment.
+
+By basing thealignment on the **QC subset** using `PeakGroupsParam`, we will map how the peaks retention time drifted over time.
+parameters used will be:
+
+The parameters for this algorithm are:
+
+-   `subsetAdjust`  and  `subset`: Allows for subset alignment. Here we base the retention time alignment on the QC samples, i.e., retention time shifts will be estimated based on these repeatedly measured samples.  `
+
+-  To align the samples, we need "anchor peaks"—peaks that are unambiguously present and identifiable across the samples.`minFraction` sets the stringency for these anchors. If we set `minFraction = 0.9`, a feature must be detected in at least 90% of the QC subset to be considered a "trustworthy" anchor. 
+    
+-   `span`: Not all RT shifts are linear. Sometimes the drift happens more aggressively at the beginning of the chromatogram than at the end. To correct this, we use **LOESS (Locally Estimated Scatterplot Smoothing)** regression.
+
+![plotallign4](images/img27.png)
+
+Once the alignment has been performed, the user should evaluate the results using the `[plotAdjustedRtime()](https://rdrr.io/pkg/xcms/man/plotAdjustedRtime.html)` function.
+
+![plotallign5](images/img28.png)
 
 ## *3- Correspondence (Grouping=Match features across different samples)*
 
