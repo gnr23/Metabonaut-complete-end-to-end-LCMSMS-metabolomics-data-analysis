@@ -242,5 +242,46 @@ Once the alignment has been performed, the user should evaluate the results usin
 
 ![plotallign5](images/img28.png)
 
+Retention time alignment results. There is only a small retention time shift since all samples were measured within the same measurement run.
+
+We can also compare the BPC before and after alignment. To get the original data, i.e. the raw retention times, we can use the `[dropAdjustedRtime()](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)` function:
+
+![Beforeafter](images/img29.png)
+
+BPC before and after alignment.
+
+We notice that the largest shift can be observed in the retention time range from 120 to 130s.  Apart from that retention time range, only little changes can be observed.
+
+Evaluating the impact of alignment on the **Internal Standards (IS)** .
+
+![alignIS](images/img30.png)
+
+EICs of cystine and methionine before and after alignment.
+
+We conducted a targeted inspection of internal standards (e.g., Cystine and Methionine). While the alignment impact on Cystine was subtle , the improvement in Methionine was obvious
+    
+we performed a statistical audit using the **MetaboAnnotation** package.
+    
+    -   **Matching:** we used `matchValues()` with `MzRtParam` to objectively isolate peaks within a strict 50 ppm (m/z) and 10-second (RT) window.
+        
+    -   **Filtering:** we applied `SingleMatchParam` to ensure only the highest-intensity peaks (`target_maxo`) were selected, effectively filtering out background noise.
+        
+-   the  `intern_standard_peaks` object acts as an index of high-confidence reference peaks across your entire sample set.
+With parameters `mzColname` and `rtColname` we specify the column names in the query (our IS) and target (chromatographic peaks) that contain the _m/z_ and retention time values on which to match entities. We perform this matching separately for each sample. For each internal standard in every sample, we use the `[filterMatches()](https://rdrr.io/pkg/MetaboAnnotation/man/Matched.html)` function and the `[SingleMatchParam()](https://rdrr.io/pkg/MetaboAnnotation/man/Matched.html)` parameter to select the chromatographic peak with the highest intensity.
+
+![metabotta](images/img31.png)
+
+ We can now extract the retention times for these chromatographic peaks before and after alignment.
+ 
+![plotallign5](images/img32.png)
+
+We can now evaluate the impact of the alignment on the retention times of internal standards across the full data set:
+
+![plotallign5](images/img33.png)
+
+Retention time variation of internal standards before and after alignment.
+
+Retention time alignment conclusion: Very slight reduction of the variation in retention times of I.S. by the alignment performed.
+
 ## *3- Correspondence (Grouping=Match features across different samples)*
 
