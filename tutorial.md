@@ -285,3 +285,70 @@ Retention time alignment conclusion: Very slight reduction of the variation in r
 
 ## *3- Correspondence (Grouping=Match features across different samples)*
 
+using `plotChromPeakDensity()` to visualize the distribution of peak apexes across the samples
+
+![corr1](images/img34.png)
+
+-   **`bw: 30`**: a 30-second window for grouping. This means if the same ion is detected in two different samples within 30 seconds of each other, the algorithm will attempt to group them together.
+    
+-   **`minFraction: 0.5`**: its meaning is a feature must be present in at least **50% of the samples**  to be kept as a "valid" feature. an effective way to prune noise/background ions that only appear in one or two samples.
+    
+-   **`binSize: 0.25`**: This is the $m/z$ tolerance. Any peaks within a 0.25 Da window will be considered candidates for the same metabolite.
+
+`plotChromPeakDensity` using `eic_cystine` (the extracted ion chromatogram for a specific metabolite) to inspect how the grouping algorithm interprets the raw data.
+
+![corr2](images/img35.png)
+
+Initial correspondence analysis, Cystine.
+
+-   **Top Panel (EIC):** This is the raw intensity. EIC signal for standards across all samples.
+    
+-   **Bottom Panel distribution**
+    
+    -   **The X-axis** is Retention Time.
+        
+    -   **The Y-axis** is Sample ID.
+        
+    -   **The vertical lines (or points)** represent where the algorithm "sees" the peak apex in each sample.
+        
+    -   **The Density Curve:** The shaded/colored line at the bottom shows the grouping probability.
+
+-   **The Goal:** I want to see the filled circles (the apexes of the peaks in each sample) forming a tight vertical line.
+ 
+Now, using`eic_met` 
+
+![corr3](images/img36.png)
+
+optimization:
+-   **$bw = 30$:** I am telling the algorithm to look for peaks within a broad, 30-second neighborhood. In modern UHPLC-MS, where peaks are often narrow (fwhm < 5-10 seconds), this was too much. It was likely blending noise or overlapping peaks that should have remained distinct.
+    
+-   **$bw = 1.8$:** i am now forcing the algorithm to be highly specific. It will only group peaks that are extremely close in retention time.
+
+![corr4](images/img37.png)
+
+Correspondence analysis with optimized parameters, Cystine.
+
+![corr5](images/img38.png)
+
+Correspondence analysis with optimized parameters, Methionine.
+
+*peaks are now grouped more accurately into a single feature for each test ion. '
+
+other important parameters optimized here such as
+
+-   **`binSize = 0.25`**: By using a small $m/z$ bin, we are minimizing the chance of **peak overlap??** (where two distinct metabolites with slightly different masses are incorrectly merged into one).
+    
+-   **`ppm`**: Since we are on a TOF (Time-of-Flight) instrument, the error in mass measurement is not constant across the range. A `ppm` value (e.g., 10–20 ppm) provides a relative window, ensuring the algorithm is more forgiving for heavier, higher-$m/z$ ions where mass accuracy naturally fluctuates.
+    
+-   **`minFraction = 0.75`**:  noise filter?? It forces the algorithm to disregard "sporadic" peaks (peaks that appear in only 1 or 2 samples due to noise or contamination) and only retain features that appear consistently in at least 75% of a group.
+
+![corr6](images/img39.png)
+
+we will extract signal for an _m/z_ similar to that of the isotope labeled methionine for a larger retention time range. Importantly, to show the actual correspondence results, we set `simulate = FALSE` for the `[plotChromPeakDensity()](https://rdrr.io/pkg/xcms/man/plotChromPeakDensity.html)` function. 
+
+![corr7](images/img40.png)
+
+![corr8](images/img41.png)
+
+By setting `simulate = FALSE`, we are no longer asking the algorithm to calculate groupings based on a hypothetical parameter set; we are asking it to show you the **actual features** that were defined by the `groupChromPeaks()` process we just completed.
+
