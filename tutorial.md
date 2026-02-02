@@ -352,3 +352,39 @@ we will extract signal for an _m/z_ similar to that of the isotope labeled methi
 
 By setting `simulate = FALSE`, we are no longer asking the algorithm to calculate groupings based on a hypothetical parameter set; we are asking it to show you the **actual features** that were defined by the `groupChromPeaks()` process we just completed.
 
+![corr9](images/img42.png)
+
+Another interesting information to look at the distribution of these features along the retention time axis.
+
+*featureDefinitions(lcms1)* retrieves the summary table of all the features identified.
+
+*$rtmed* specifically extracts the median retention time for every feature.
+
+*vc* is now a vector containing a list of times (in seconds) for every feature found in samples.
+
+a sequence of numbers from 0 to the maximum retention time found in data.
+
+*length.out = 15*: This tells R to divide that entire time range into 15 equal segments (bins).
+
+*round(0):* This makes the bin boundaries clean, whole numbers (e.g., 0, 17, 34...).
+
+*breaks* is a vector of 15 "edges" that act as the boundaries for time slices.
+
+The *cut()*  function looks at every individual retention time in vc and assigns it to one of the 15 bins defined by breaks.
+
+*include.lowest = TRUE* ensures that a feature occurring exactly at time 0 is included in the first bin.
+
+![corr10](images/img43.png)
+
+`featureDefinitions(lcms1)`, we are viewing the **master feature table**. Each row (`FTxxxx`) represents a chemical feature, and the columns provide the statistical coordinates for that feature:
+
+-   **`mzmed` / `rtmed`**: The median mass-to-charge ratio and retention time across all samples, s
+    
+-   **`npeaks`**: The total count of peaks assigned to this feature. 
+    
+-   **`peakidx`**: A pointer to the underlying raw peaks. allows to go back from a feature to the specific raw signal it was built fr
+
+The actual abundances for these features, which represent also the final preprocessing results, can be extracted with the `[featureValues()](https://rdrr.io/pkg/xcms/man/XCMSnExp-peak-grouping-results.html)` function:
+
+![corr11](images/img44.png)
+
