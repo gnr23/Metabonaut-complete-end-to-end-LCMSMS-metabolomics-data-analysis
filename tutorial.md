@@ -388,3 +388,41 @@ The actual abundances for these features, which represent also the final preproc
 
 ![corr11](images/img44.png)
 
+## *4- Gap filling*
+
+By calculating the percentage of missing values, weare quantifying the **sparsity** of our dataset before we apply the `fillChromPeaks` function.
+
+![gap1](images/img45.png)
+
+26 is  significant number of missing values values in our dataset.
+
+![gap2](images/img46.png)
+
+-   **`ftidx <- which(is.na(rowSums(featureValues(lcms1))))`**
+    
+    -   `featureValues(lcms1)` creates a matrix of abundances.
+        
+    -   `rowSums(...)` adds up the intensities for each feature across all samples.
+        
+    -   If a feature has even _one_ `NA` (missing value), the `rowSums` will result in `NA`.
+        
+    -   This line isolates the **indices** of every feature that has at least one missing value.
+        
+-   **`fts <- rownames(featureDefinitions(lcms1))[ftidx]`**
+    
+    -   This creates a list of the specific names (e.g., "FT0003") of the features that are incomplete.
+        
+-   **`farea <- featureArea(lcms1, features = fts[1:2])`**
+    
+    -   This grabs the "spatial coordinates" ($m/z$ and $RT$ boundaries) for the first two incomplete features in your list.
+
+result: in both instances  a chromatographic peak was only identified in one of the two selected samples (red line), hence a missing value is reported for this feature in those particular samples (blue line).
+
+the most likely reason peak detection failed is that the signal for this feature is very low, 
+
+The `fillChromPeaks()` function effectively "bypasses" the threshold-based peak detection algorithm for the samples where the peak was missed.
+
+![gap3](images/img47.png)
+
+using the function with default parameters
+
