@@ -426,3 +426,77 @@ The `fillChromPeaks()` function effectively "bypasses" the threshold-based peak 
 
 using the function with default parameters
 
+Seeing that value drop to **5.%** indicates that the gap-filling process has effectively "rescued" most of the missing data in the data set
+
+After gap-filling, also in the blue colored sample a chromatographic peak is present and its peak area would be reported as feature abundance for that sample.
+
+we can also compare the intensity of peaks that were **automatically detected** vs. the intensity of peaks that had to be **"gap-filled".**
+
+![gap4](images/img48.png)
+Detected vs. filled-in signal.
+
+-   **`vals_detect`**: the peaks that the algorithm found without help.
+    
+-   **`vals_filled`**: These are the "rescued" signals.  The gap-filled data.
+    
+-   **The Plot**:
+    
+    -   **X-axis (Detected Intensity):** The average signal intensity for a feature in samples where it was clearly identified.
+        
+    -   **Y-axis (Filled Intensity):** The average signal intensity for that same feature in samples where it was initially missed.
+
+observation: high correlation at high intensities and increased variance/lower values for gap-filled peaks at low intensities as expected
+
+![gap4](images/img49.png)
+
+fitting of a linear regression 
+
+The linear regression line has a slope of 1.12 and an intercept of -1.62. This indicates that the filled-in signal is on average 1.12 times higher than the detected signal.
+
+## *4- Filtering features - missing values*
+
+By removing features that appear only sporadically, we are shifting our focus from "all detected signals"to "biologically relevant features" (which appear consistently across experimental groups).
+
+Such filter can be performed with `[filterFeatures()](https://rdrr.io/pkg/ProtGenerics/man/filterFeatures.html)` function from the _[xcms](https://bioconductor.org/packages/3.22/xcms)_ package with the `PercentMissingFilter` setting. The parameters of this filer:
+
+-   **`threshold = 40`**: Since group size is 3, $1/3$ missing is 33.3%, which is less than 40%. A threshold of 40% allows for $1/3$ missing values. If it was set to 30%, it would be required for the peak to be present in all 3 samples (100% detection).
+    
+-   **`f`**: forcing `QC` to `NA`
+
+![missing1](images/img50.png)
+
+we apply the filter on the`"raw"`  assay of our result object, that contains abundance values only for detected chromatographic peaks 
+
+If we filtered based on gap-filled data, you might keep a feature that is effectively just "filled-in noise" across all samples, which would give you false positives in your later statistical analysis.
+
+## *5- Preprocessing results - archiving*
+
+The final results of the LC-MS data preprocessing are stored within the `XcmsExperiment` object. The `[processHistory()](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)` function returns a list of the various applied processing steps in chronological order. 
+
+![preprores1](images/img51.png)
+we extract the information for the first step of the performed preprocessing.
+
+*The final result of the whole LC-MS data preprocessing is a two-dimensional matrix with abundances of the so-called LC-MS features in all samples.* 
+
+at this stage of the analysis features are only characterized by their _***m/z_ and retention time*** and we don’t have yet any information which metabolite a feature could represent'
+
+To conclude preprocessing we transfer our data into a `SummarizedExperiment` object and for **reproducibility and interoperability**.
+-   **Encapsulation:** The `SummarizedExperiment` (SE) object is the standard container in the Bioconductor ecosystem.
+
+![preprores2](images/img52.png)
+
+The `[quantify()](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)` function takes the same parameters than the `[featureValues()](https://rdrr.io/pkg/xcms/man/XCMSnExp-peak-grouping-results.html)` function, thus, with the call below we extract a `SummarizedExperiment` with only the detected, but not gap-filled, feature abundances
+
+`[sampleData()](https://rdrr.io/pkg/MsExperiment/man/MsExperiment.html)` are now available as `[colData()](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)` (column, sample annotations) and the `[featureDefinitions()](https://rdrr.io/pkg/xcms/man/XCMSnExp-class.html)` as `[rowData()](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)` (row, feature annotations).
+
+![preprores3](images/img53.png)
+
+added the detected and gap-filled feature abundances as an additional assay to the `SummarizedExperiment`.
+
+Feature abundances can be extracted with the `[assay()](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)` function. 
+
+![preprores4](images/img54.png)
+
+Saving the final state in a platform-independent format (`alabaster`) and it will be read from other languages like Python and Javascript as well as loaded easily back into R.
+
+![preprores5](images/img55.png)
