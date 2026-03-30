@@ -592,14 +592,17 @@ Iby comparing the distribution of the log2 transformed feature abundances before
 ![norm7](images/img62.png)
 normalization didnt have noticeable impact between PC1 & PC2
 
-![norm8](images/img63.png)
+![norm8](images/IMG63.png)
+
 the separation of the study groups on PC3 seems to be better and difference between QC samples lower after normalization
 
 **observation** The separation between the study and QC samples remains the same after the normalization. <-- expected  as normalization should not correct for biological variance but only technical.
 
 
 Additionally, the RLA plots can be used -> check the reproducibility between groups 
-![norm9](images/img64.png)
+
+![norm9](images/IMG64.png)
+
 RLA plot before and after normalization. The normalization process has effectively centered the data around the median and medians for all samples are now closer to zero.
 
 
