@@ -500,3 +500,106 @@ Feature abundances can be extracted with the `[assay()](https://rdrr.io/pkg/Summ
 Saving the final state in a platform-independent format (`alabaster`) and it will be read from other languages like Python and Javascript as well as loaded easily back into R.
 
 ![preprores5](images/img55.png)
+
+## **Step 3 Normalization**
+
+We perform data normalization to strip away the bias so that the remaining variance is free from LCMSMS (mainly)a instrument drift, batch effects, and preparation errors .
+
+### Approaches to Normalization
+
+The choice of method depends entirely on the **source of the bias**:
+
+**Sample Preparation**
+
+Global intensity shift (all features affected)
+
+Median Scaling, Quantile Normalization
+
+**Instrument Drift**
+
+Time-dependent trend (specific features affected)
+
+LOESS, Linear Modeling (`adjust_lm`)
+
+**Batch Effects**
+
+Plate-specific offset
+
+Batch correction (e.g., ComBat or linear modeling)
+
+### 1. Initial quality assessment
+
+By imputing the "below detection limit" and other missing values, we allow **mathematical algorithms like PCA** to run, while preserving the information including features that were for example , in fact, very low in abundance.
+
+- 
+![norm1](images/img56.png)
+
+imputing missing value and adding the resulting data matrix as a new _assay_ to our result object.
+
+then we use some transformation tools before the PCA: 
+
+![norm2](images/img57.png)
+
+-   **Log2 Transformation:** due to for example many low-abundance features, a few very high-abundance ones Log2 squashes this distribution, making it "normal" enough for linear methods like PCA to handle.
+    
+-   **Centering:** Shifts each feature so its mean is zero
+    
+-   **Scaling:** Divides each feature by its standard deviation. This gives every metabolite an equal "vote" in the PCA, preventing high-intensity features from dominating the plot simply because they have larger numerical values.
+
+![norm3](images/img58.png)
+PCA of the data coloured by phenotypes. The PCA above shows a clear separation of the study samples (plasma) from the QC samples (serum) on the first principal component (PC1). The separation based on phenotype is visible on the third principal component (PC3). Also, QC pool samples are grouped closely together in the center of the plot, therefore the assay is stable.
+
+
+**Intensity evaluation**
+
+These visualizations confirm data is generally consistent, but there are specific technical biases—such as the median shift in those two CVD samples—that need to be addressed.
+
+
+-   **Violin Plots:** By showing the density of log2 intensities, we verify that the **dynamic range** is comparable across the samples. 
+    
+-   **RLA Plots :**  RLA plots amplify small differences that aren't visible in raw abundance boxplots.
+    
+    - we seek all samples to have a median RLA of **0** (the dashed line).
+        
+    -   **Observation:** Since CVD samples are hovering away from the zero line they are deviant we need to normalize between to account for that
+     
+![norm4](images/img59.png)
+
+Number of detected peaks and feature abundances.
+
+we can calculate and visualize within group RLA values using the `[rowRla()](https://rdrr.io/pkg/xcms/man/rla.html)` function from the _[MsCoreUtils](https://bioconductor.org/packages/3.22/MsCoreUtils)_ package defining with parameter `f` the sample groups.
+
+![norm5](images/img60.png)
+
+RLA plot for the raw data and filled data.
+
+### 2. Between sample normalisation
+
+median scaling
+we compare the median signal of every sample to the grand median of the entire dataset.
+
+-   we will create a **normalization factor (`nf_mdn`)** for each sample.
+    
+-   By dividing raw abundances by these factors, we force every sample to align to the same "average" signal baseline.
+
+![norm6](images/img61.png)
+storing both the imputed and non-imputed data within the same `SummarizedExperiment` object
+
+### 3. Assessing overall effectiveness of the normalization approach
+
+Iby comparing the distribution of the log2 transformed feature abundances before and after normalization we evaluate the effectiveness of the normalization process. 
+
+![norm7](images/img62.png)
+normalization didnt have noticeable impact between PC1 & PC2
+
+![norm8](images/img63.png)
+the separation of the study groups on PC3 seems to be better and difference between QC samples lower after normalization
+
+**observation** The separation between the study and QC samples remains the same after the normalization. <-- expected  as normalization should not correct for biological variance but only technical.
+
+
+Additionally, the RLA plots can be used -> check the reproducibility between groups 
+![norm9](images/img64.png)
+RLA plot before and after normalization. The normalization process has effectively centered the data around the median and medians for all samples are now closer to zero.
+
+
