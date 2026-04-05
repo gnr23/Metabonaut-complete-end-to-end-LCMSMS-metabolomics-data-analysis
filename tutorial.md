@@ -606,3 +606,69 @@ Additionally, the RLA plots can be used -> check the reproducibility between gro
 RLA plot before and after normalization. The normalization process has effectively centered the data around the median and medians for all samples are now closer to zero.
 
 
+### 2. Between sample normalisation
+
+median scaling
+we compare the median signal of every sample to the grand median of the entire dataset.
+
+-   we will create a **normalization factor (`nf_mdn`)** for each sample.
+    
+-   By dividing raw abundances by these factors, we force every sample to align to the same "average" signal baseline.
+
+![norm6](images/img61.png)
+storing both the imputed and non-imputed data within the same `SummarizedExperiment` object
+
+### 3. Assessing overall effectiveness of the normalization approach
+
+Iby comparing the distribution of the log2 transformed feature abundances before and after normalization we evaluate the effectiveness of the normalization process. 
+
+![norm7](images/img62.png)
+normalization didnt have noticeable impact between PC1 & PC2
+
+![norm8](images/IMG63.png)
+the separation of the study groups on PC3 seems to be better and difference between QC samples lower after normalization
+
+**observation** The separation between the study and QC samples remains the same after the normalization. <-- expected  as normalization should not correct for biological variance but only technical.
+
+
+Additionally, the RLA plots can be used -> check the reproducibility between groups 
+
+![norm9](images/IMG64.png)
+
+RLA plot before and after normalization. The normalization process has effectively centered the data around the median and medians for all samples are now closer to zero.
+
+## **Step 4 Quality Control**
+
+By applying the **Dratio (Dispersion Ratio)** ([Broadhurst et al. 2018](https://rformassspectrometry.github.io/Metabonaut/articles/a-end-to-end-untargeted-metabolomics.html#ref-broadhurst_guidelines_2018)) filter, we shift from a dataset that was "statistically complete" (post-imputation) to one that is biologically reliable. and meaningful
+
+additionally , Repeatedly measured QC samples typically serve as a robust basis for cleansing datasets allowing to identify features with excessively high noise so we will use them
+
+![norm9](images/img65.png)
+
+By setting a threshold of 0.4, the noise (measured in QCs) must be less than 40% of the biological variance (measured in your study samples).
+
+The dataset was reduced from 8724 to 4518 most reliable features. 
+
+
+![norm10](images/img66.png)
+storing QC samples in a separate object for later use and calculate the CV of the QC samples and add that as an additional column to the `[rowData()](https://rdrr.io/pkg/SummarizedExperiment/man/SummarizedExperiment-class.html)` of our result object to be used later as in significant feature
+
+## Step 5 Overlapping features
+
+to understand how these features are distributed across your samples.
+
+"Are the same metabolites being detected in all samples, or is there a subset that is unique to specific biological conditions? "This analysis confirms the **representativeness** of data.
+
+![ovrlp1](images/img67.png)
+**Venn Diagrams:** Excellent for a small number of groups (3 or fewer). They give an immediate, intuitive sense of "overlap" and "uniqueness" (the exclusive sets). However, above 4, 5, or 6 groups, a Venn diagram becomes messy and can be replaced by Upset diagram
+
+![ovrlp2](images/img68.png)
+-   The **horizontal bars** on the left show the total number of features detected in each individual sample.
+    
+-   The **vertical bars** on top show the number of features shared by specific combinations of samples (the intersections).
+    
+-   This allows to instantly spot if a specific group of samples is missing a large chunk of features compared to the others.
+
+We are looking for two things?
+-   **The "Core" Metabolome:** These are the features that appear in _all_ samples.
+-   **Condition-Specific Markers:** If features that appear in all "CVD" samples but are completely absent in "CTR" samples-->,potentially identified candidate biomarkers for the condition of interest.
